@@ -107,6 +107,18 @@ class Particle_Bed(Sphere):
         
         return self.A # m^2
     
+    # Calculate the temperature of medium_1 at the end of the heat excahgner
+    def calc_T_end(self, L, psi=0.5, T_w=383.15, d_k=100e-6, m_flow=1.9470702094005574e-06): # flow at 100 ml/min air
+        
+        A_bed_total = np.pi*5e-3**2
+        rho_v = m_flow/A_bed_total
+        Re = self.calc_Re(d_k, rho_v=rho_v)
+        Nu = self.calc_Nu(psi=psi, Re=Re)
+        alpha = self.calc_alpha_1(Nu, d_k)
+        A = self.calc_A(d_k, A_bed_total, L)
+        T_end = self.calc_T_1_x(T_w, alpha, m_flow, A=A)
+        return T_end
+    
     # Pressure drop calculations
     
     # Euler number
@@ -162,6 +174,7 @@ class Particle_Bed(Sphere):
         
         return self.Eu
     
+    
     def calc_dp(self, d_p, dL, psi, v, Eu=None, Re=None, rho=None):
         '''
         Calculates the pressure drop with Euler number
@@ -179,20 +192,52 @@ class Particle_Bed(Sphere):
         return dp
     
     
+    # Top level method to calculate the pressure drop across the heat exchanger
+    def calc_pressure_drop(self, L, psi=0.5, T_w=383.15, d_k=100e-6, m_flow=1.9470702094005574e-06):
+        
+        A_bed_total = np.pi*5e-3**2
+        rho_v = m_flow/A_bed_total
+        self.set_state_1()
+        v = rho_v / pb.medium_1.d
+        Re = self.calc_Re(d_k, rho_v = rho_v)
+        
+        dp = self.calc_dp(d_k, L, psi, v, Re=Re)
+        
+        return dp
+    
+
+    
+###### TESTER FUNCTIONS #######################################################
 pb = Particle_Bed(Gas("DryAir"))
 pb.T_1 = [298.15,298.15]
 pb.T_2 = [383.15,383.15]
 pb.p_1 = 100000   
-def calc_T_end(L, psi=0.5, T_w=383.15, d_k=100e-6, m_flow=1.9470702094005574e-06): # flow at 100 ml/min air
+def temperature_and_pressureDrop_test(): # flow at 100 ml/min air
     
-    A_bed_total = np.pi*5e-3**2
-    rho_v = m_flow/A_bed_total
-    Re = pb.calc_Re(d_k, rho_v=rho_v)
-    Nu = pb.calc_Nu(psi=psi, Re=Re)
-    alpha = pb.calc_alpha_1(Nu, d_k)
-    A = pb.calc_A(d_k, A_bed_total, L)
-    T_end = pb.calc_T_1_x(T_w, alpha, m_flow, A=A)
-    return T_end
+    passes = []
+
+    try:
+        T_end = pb.calc_T_end(0.01, psi=0.5, T_w=383.15, d_k=100e-6, m_flow=1.9470702094005574e-06)
+        ic(T_end)
+        passes.append(True)
+    except Exception as e:
+        ic(f'Calculation of T_end unsuccessful: {e}', c='red')
+        passes.append(False)
+        
+    try:
+        dp = pb.calc_pressure_drop(0.01, psi=0.5, T_w=383.15, d_k=100e-6, m_flow=1.9470702094005574e-06)
+        ic(dp)
+        passes.append(True)
+    except Exception as e:
+        ic(f'Calculation of pressure drop unsuccessful: {e}', c='red')
+        passes.append(False)
+        
+    if all(passes): 
+        ic('test passed')
+    else:
+        ic('test unsuccessful')
+    ic(passes)
+        
 
 def calc_pressure_drop(L, psi=0.5, T_w=383.15, d_k=100e-6, m_flow=1.9470702094005574e-06):
     
@@ -208,6 +253,5 @@ def calc_pressure_drop(L, psi=0.5, T_w=383.15, d_k=100e-6, m_flow=1.947070209400
 
 if __name__ == '__main__':
     
-    ic(calc_T_end(0.01))
-    ic(calc_pressure_drop(0.01))
+    temperature_and_pressureDrop_test()
     
