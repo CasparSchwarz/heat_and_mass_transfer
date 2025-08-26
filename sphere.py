@@ -108,13 +108,14 @@ class Particle_Bed(Sphere):
         return self.A # m^2
     
     # Calculate the temperature of medium_1 at the end of the heat excahgner
-    def calc_T_end(self, L, psi=0.5, T_w=383.15, d_k=100e-6, m_flow=1.9470702094005574e-06): # flow at 100 ml/min air
+    def calc_T_end(self, L, psi=0.5, T_w=383.15, d_k=100e-6, dBed=6e-3, m_flow=1.9470702094005574e-06): # flow at 100 ml/min air
         
-        A_bed_total = np.pi*5e-3**2
+        A_bed_total = np.pi*dBed**2/4
         rho_v = m_flow/A_bed_total
         Re = self.calc_Re(d_k, rho_v=rho_v)
         Nu = self.calc_Nu(psi=psi, Re=Re)
         alpha = self.calc_alpha_1(Nu, d_k)
+        ic(alpha)
         A = self.calc_A(d_k, A_bed_total, L)
         T_end = self.calc_T_1_x(T_w, alpha, m_flow, A=A)
         return T_end

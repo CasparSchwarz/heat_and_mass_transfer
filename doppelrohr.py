@@ -14,6 +14,10 @@ mean = np.mean
 class Doppelrohr(Heat_exchanger):
     
     def __init__(self, medium_1, medium_2):
+        
+        if any([medium_1 is None, medium_2 is None]):
+            raise Exception("Medium_1 and medium_2 need to be defined at initialization")
+            
         super().__init__(medium_1, medium_2)
         
     def calc_Re_1(self, v, X_char, eta=None, rho=None):

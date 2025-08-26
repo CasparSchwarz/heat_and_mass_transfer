@@ -38,9 +38,6 @@ class Heat_exchanger:
     
     def __init__(self, medium_1, medium_2):
         
-        if any([medium_1 is None, medium_2 is None]):
-            raise Exception("Medium_1 and medium_2 need to be defined at initialization")
-        
         self.medium_1 = medium_1
         self.medium_2 = medium_2
         
