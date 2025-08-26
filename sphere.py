@@ -194,12 +194,12 @@ class Particle_Bed(Sphere):
     
     
     # Top level method to calculate the pressure drop across the heat exchanger
-    def calc_pressure_drop(self, L, psi=0.5, T_w=383.15, d_k=100e-6, m_flow=1.9470702094005574e-06):
+    def calc_pressure_drop(self, L, psi=0.5, d_k=100e-6, dBed=6e-3, m_flow=1.9470702094005574e-06):
         
-        A_bed_total = np.pi*5e-3**2
+        A_bed_total = np.pi*dBed**2/4
         rho_v = m_flow/A_bed_total
         self.set_state_1()
-        v = rho_v / pb.medium_1.d
+        v = rho_v / self.medium_1.d
         Re = self.calc_Re(d_k, rho_v = rho_v)
         
         dp = self.calc_dp(d_k, L, psi, v, Re=Re)
@@ -213,24 +213,24 @@ pb = Particle_Bed(Gas("DryAir"))
 pb.T_1 = [298.15,298.15]
 pb.T_2 = [383.15,383.15]
 pb.p_1 = 100000   
-def temperature_and_pressureDrop_test(): # flow at 100 ml/min air
+def temperature_and_pressureDrop_test(): 
     
     passes = []
 
     try:
-        T_end = pb.calc_T_end(0.01, psi=0.5, T_w=383.15, d_k=100e-6, m_flow=1.9470702094005574e-06)
+        T_end = pb.calc_T_end(0.01, psi=0.5, T_w=383.15, d_k=100e-6, m_flow=1.9470702094005574e-06) # flow at 100 ml/min air
         ic(T_end)
         passes.append(True)
     except Exception as e:
-        ic(f'Calculation of T_end unsuccessful: {e}', c='red')
+        ic(f'Calculation of T_end unsuccessful: {e}')
         passes.append(False)
         
     try:
-        dp = pb.calc_pressure_drop(0.01, psi=0.5, T_w=383.15, d_k=100e-6, m_flow=1.9470702094005574e-06)
+        dp = pb.calc_pressure_drop(0.01, psi=0.5, d_k=100e-6, dBed=6e-3, m_flow=1.9470702094005574e-06) # flow at 100 ml/min air
         ic(dp)
         passes.append(True)
     except Exception as e:
-        ic(f'Calculation of pressure drop unsuccessful: {e}', c='red')
+        ic(f'Calculation of pressure drop unsuccessful: {e}')
         passes.append(False)
         
     if all(passes): 
@@ -239,18 +239,6 @@ def temperature_and_pressureDrop_test(): # flow at 100 ml/min air
         ic('test unsuccessful')
     ic(passes)
         
-
-def calc_pressure_drop(L, psi=0.5, T_w=383.15, d_k=100e-6, m_flow=1.9470702094005574e-06):
-    
-    A_bed_total = np.pi*5e-3**2
-    rho_v = m_flow/A_bed_total
-    pb.set_state_1()
-    v = rho_v / pb.medium_1.d
-    Re = pb.calc_Re(d_k, rho_v = rho_v)
-    
-    dp = pb.calc_dp(d_k, L, psi, v, Re=Re)
-    
-    return dp
 
 if __name__ == '__main__':
     
