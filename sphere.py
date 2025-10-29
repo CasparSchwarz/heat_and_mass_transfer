@@ -75,6 +75,10 @@ class Sphere(Heat_exchanger):
         
 class Particle_Bed(Sphere):
     
+    psi = 0.26 # psi for closest packing of spheres
+    f_a = None
+    
+    
     def __init__(self, medium):
         super().__init__(medium)
         
@@ -82,7 +86,7 @@ class Particle_Bed(Sphere):
         
     
         if psi is None:
-            psi=0.26 # psi for closest packing of spheres
+            psi=self.psi 
             
         if f_a is None:
             f_a = self.calc_f_a(psi)
@@ -163,6 +167,8 @@ class Particle_Bed(Sphere):
         return self.Eu
     
     def calc_Eu(self, psi, Re=None, **kwargs):
+        '''Correlation for Euler number from VDI Wärmeatlas
+        '''
         
         if Re is None:
             Re = self.calc_Re(kwargs)
@@ -189,6 +195,9 @@ class Particle_Bed(Sphere):
             self.set_state_1()
             rho = self.medium_1.d
             
+        if psi is None:
+            psi = self.psi
+            
         if Eu is None:
             Eu = self.calc_Eu(psi, Re)
             
@@ -198,7 +207,7 @@ class Particle_Bed(Sphere):
     
     
     # Top level method to calculate the pressure drop across the heat exchanger
-    def calc_pressure_drop(self, L, psi=0.5, d_k=100e-6, dBed=6e-3, m_flow=1.9470702094005574e-06):
+    def calc_pressure_drop(self, L, d_k=100e-6, dBed=6e-3, m_flow=1.9470702094005574e-06, psi=None):
         
         A_bed_total = np.pi*dBed**2/4
         rho_v = m_flow/A_bed_total
@@ -230,7 +239,7 @@ def temperature_and_pressureDrop_test():
         passes.append(False)
         
     try:
-        dp = pb.calc_pressure_drop(0.01, psi=0.5, d_k=100e-6, dBed=6e-3, m_flow=1.9470702094005574e-06) # flow at 100 ml/min air
+        dp = pb.calc_pressure_drop(0.001, psi=None, d_k=5e-6, dBed=12.7e-3, m_flow=1.9470702094005574e-06) # flow at 100 ml/min air
         ic(dp)
         passes.append(True)
     except Exception as e:

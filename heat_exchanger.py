@@ -45,16 +45,37 @@ class Heat_exchanger:
     
     def set_state_1(self, p=None, T=None):
         
-        if p is None: p=self.p_1
-        if T is None: T=mean(self.T_1)
+        if p is None and self.p_1 is None: 
+            self.p_1 = float(input("Set pressure  [Pa] for medium_1: "))
+            p = self.p_1
+        elif p is None and self.p_1 is not None:
+            p = self.p_1
         
+            
+        if T is None and self.T_1[0] is None: 
+            self.T_1[0] = float(input("Set inlet temperature [K] for medium_1: "))
+            self.T_1[1] = float(input("Set outlet temperature [K] for medium_1: "))
+            T = mean(self.T_1)
+        elif T is None and self.T_1[0] is not None:
+            T = mean(self.T_1)
+                
         self.medium_1.setState_pTxi(p, T)
         
     def set_state_2(self, p=None, T=None):
         
-        if p is None: p=self.p_2
-        if T is None: T=mean(self.T_2)
-        
+        if p is None and self.p_2 is None: 
+            self.p_2 = float(input("Set pressure  [Pa] for medium_2: "))
+            p = self.p_2
+        elif p is None and self.p_2 is not None:
+            p = self.p_2
+            
+        if T is None and self.T_2[0] is None: 
+            self.T_2[0] = float(input("Set inlet temperature [K] for medium_2: "))
+            self.T_2[1] = float(input("Set outlet temperature [K] for medium_2: "))
+            T=mean(self.T_2)
+        elif T is None and self.T_2[0] is not None:
+            T = mean(self.T_2)      
+
         self.medium_2.setState_pTxi(p, T)
         
     def set_A(self, A):
@@ -208,3 +229,4 @@ class Heat_exchanger:
         self.alpha_2 = Nu*lamb / L
         
         return self.alpha_2
+    
