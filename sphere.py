@@ -78,8 +78,12 @@ class Particle_Bed(Sphere):
     def __init__(self, medium):
         super().__init__(medium)
         
-    def calc_Nu(self, f_a=None, psi=None, **kwargs):
+    def calc_Nu(self, f_a=None, psi=None, **kwargs): 
         
+    
+        if psi is None:
+            psi=0.26 # psi for closest packing of spheres
+            
         if f_a is None:
             f_a = self.calc_f_a(psi)
         
@@ -108,9 +112,9 @@ class Particle_Bed(Sphere):
         return self.A # m^2
     
     # Calculate the temperature of medium_1 at the end of the heat excahgner
-    def calc_T_end(self, L, psi=0.5, T_w=383.15, d_k=100e-6, dBed=6e-3, m_flow=1.9470702094005574e-06): # flow at 100 ml/min air
+    def calc_T_end(self, L, psi, T_w=383.15, d_k=100e-6, dBed=6e-3, m_flow=1.9470702094005574e-06): # flow at 100 ml/min air
         
-        A_bed_total = np.pi*dBed**2/4
+        A_bed_total = np.pi*dBed**2 /4
         rho_v = m_flow/A_bed_total
         Re = self.calc_Re(d_k, rho_v=rho_v)
         Nu = self.calc_Nu(psi=psi, Re=Re)
