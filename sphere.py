@@ -75,6 +75,9 @@ class Sphere(Heat_exchanger):
         
 class Particle_Bed(Sphere):
     
+    # psi = V_empty / V_total = 1 - rho_total / rho_sphere
+    # Lewatit: rho_total = 630 g/l
+    # closest packing: 74 % -> Lewatit rho_sphere = 851 g/l
     psi = 0.26 # psi for closest packing of spheres
     f_a = None
     
@@ -231,16 +234,14 @@ def temperature_and_pressureDrop_test():
     passes = []
 
     try:
-        T_end = pb.calc_T_end(0.01, psi=0.5, T_w=383.15, d_k=100e-6, m_flow=1.9470702094005574e-06) # flow at 100 ml/min air
-        ic(T_end)
+        ic(pb.calc_T_end(0.01, psi=0.5, T_w=383.15, d_k=100e-6, m_flow=1.9470702094005574e-06)) # flow at 100 ml/min air
         passes.append(True)
     except Exception as e:
         ic(f'Calculation of T_end unsuccessful: {e}')
         passes.append(False)
         
     try:
-        dp = pb.calc_pressure_drop(0.001, psi=None, d_k=5e-6, dBed=12.7e-3, m_flow=1.9470702094005574e-06) # flow at 100 ml/min air
-        ic(dp)
+        ic(pb.calc_pressure_drop(0.0397, psi=0.5, d_k=90e-6, dBed=12.7e-3, m_flow=1.9470702094005574e-06)) # flow at 100 ml/min air
         passes.append(True)
     except Exception as e:
         ic(f'Calculation of pressure drop unsuccessful: {e}')
