@@ -43,6 +43,13 @@ class Sphere(Heat_exchanger):
         return (0.037*Re**(0.8)*Pr) / (1+2.443*Re**(-0.1)*(Pr**(2./3.)-1))
     
     def calc_Re(self, d_k, v=None, rho_v=None, rho=None, eta=None):
+        ''' Calculation of Reynolds number for sphreres
+        d_k:    Particle diameter in m
+        v:      Fluid velocity in m/s
+        rho_v:  Density multiplied with velocity
+        rho:    Density in kg/m^3
+        eta:    Dynamic viscosity in Pa*s
+        '''
         
         if eta is None:
             self.set_state_1()
@@ -169,6 +176,12 @@ class Particle_Bed(Sphere):
         
         return self.Eu
     
+    def calc_Re(self, *args, **kwargs):
+        Re = super().calc_Re(*args, **kwargs) / self.psi # Correct Reynolds number for fixed bed
+        
+        return Re
+        
+    
     def calc_Eu(self, psi, Re=None, **kwargs):
         '''Correlation for Euler number from VDI Wärmeatlas
         '''
@@ -217,6 +230,7 @@ class Particle_Bed(Sphere):
         self.set_state_1()
         v = rho_v / self.medium_1.d
         Re = self.calc_Re(d_k, rho_v = rho_v)
+        ic(Re)
         
         dp = self.calc_dp(d_k, L, psi, v, Re=Re)
         
@@ -241,7 +255,7 @@ def temperature_and_pressureDrop_test():
         passes.append(False)
         
     try:
-        ic(pb.calc_pressure_drop(0.0397, psi=0.5, d_k=90e-6, dBed=12.7e-3, m_flow=1.9470702094005574e-06)) # flow at 100 ml/min air
+        ic(pb.calc_pressure_drop(0.004, psi=None, d_k=70e-6, dBed=12.7e-3, m_flow=1.9470702094005574e-06)) # flow at 100 ml/min air
         passes.append(True)
     except Exception as e:
         ic(f'Calculation of pressure drop unsuccessful: {e}')
