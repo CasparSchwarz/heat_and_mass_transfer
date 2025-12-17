@@ -66,6 +66,15 @@ class Sphere(Heat_exchanger):
         return self.Re
         
     def calc_T_1_x(self, T_w, alpha_1=None, m_flow_1=None, c_p=None, A=None):
+        '''Calculate the temperature of medium_1 at position x
+        x is predetermined by the area A
+        
+        T_w:     Wall temperature in K
+        alpha_1: Heat transfer coefficient between medium_1 and wall in W/m^2K
+        m_flow_1: Mass flow of medium 1 in kg/s
+        c_p:      Specific heat capacity of medium_1 in kJ/kgK
+        A:        Heat exchanger Area in m^2
+        '''
         
         if alpha_1 is None: alpha_1 = self.alpha_1
         if m_flow_1 is None: m_flow_1 = self.m_flow_1
@@ -177,7 +186,7 @@ class Particle_Bed(Sphere):
         return self.Eu
     
     def calc_Re(self, *args, **kwargs):
-        Re = super().calc_Re(*args, **kwargs) / self.psi # Correct Reynolds number for fixed bed
+        Re = super().calc_Re(*args, **kwargs) / self.psi # Correct Reynolds number for particle bed
         
         return Re
         
@@ -206,7 +215,7 @@ class Particle_Bed(Sphere):
         '''
         Calculates the pressure drop with Euler number
         '''
-    
+        
         if rho is None:
             self.set_state_1()
             rho = self.medium_1.d
@@ -225,7 +234,7 @@ class Particle_Bed(Sphere):
     # Top level method to calculate the pressure drop across the heat exchanger
     def calc_pressure_drop(self, L, d_k=100e-6, dBed=6e-3, m_flow=1.9470702094005574e-06, psi=None):
         
-        A_bed_total = np.pi*dBed**2/4
+        A_bed_total = np.pi*dBed**2 / 4
         rho_v = m_flow/A_bed_total
         self.set_state_1()
         v = rho_v / self.medium_1.d
