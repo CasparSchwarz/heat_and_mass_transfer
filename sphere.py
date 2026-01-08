@@ -253,6 +253,9 @@ pb.T_1 = [298.15,298.15]
 pb.T_2 = [383.15,383.15]
 pb.p_1 = 100000   
 def temperature_and_pressureDrop_test(): 
+    '''Test function for temperature and pressureDrop across packed bed
+    
+    '''
     
     passes = []
 
