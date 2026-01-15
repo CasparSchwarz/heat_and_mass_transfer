@@ -45,6 +45,9 @@ class Heat_exchanger:
     
     def set_state_1(self, p=None, T=None):
         
+        if self.medium_1 is None:
+            return Exception("No medium defined for medium_1")
+        
         if p is None and self.p_1 is None: 
             self.p_1 = float(input("Set pressure  [Pa] for medium_1: "))
             p = self.p_1
@@ -62,6 +65,9 @@ class Heat_exchanger:
         self.medium_1.setState_pTxi(p, T)
         
     def set_state_2(self, p=None, T=None):
+        
+        if self.medium_2 is None:
+            return Exception("No medium defined for medium_2")
         
         if p is None and self.p_2 is None: 
             self.p_2 = float(input("Set pressure  [Pa] for medium_2: "))
