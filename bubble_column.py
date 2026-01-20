@@ -131,44 +131,65 @@ class Bubble_Column(Heat_exchanger):
     
     
     
-    
+water = Liquid('Water')
+air = Gas('DryAir')
+bc = Bubble_Column(air, water)
+bc.T_1 = [298.15, 298.15]
+bc.T_2 = [298.15, 298.15]
+bc.p_1 = 1e5
+bc.p_2 = 1e5  
+ 
 def test():
-    water = Liquid('Water')
-    air = Gas('DryAir')
-    bc = Bubble_Column(air, water)
-    bc.T_1 = [298.15, 298.15]
-    bc.T_2 = [298.15, 298.15]
-    bc.p_1 = 1e5
-    bc.p_2 = 1e5
     
-    bc.V_flow = 100 / 60000 # m^3/s
-    bc.D = 0.1 #m
+    isSuccessful = []
+    
+    bc.V_flow = 0.05 / 3600 # m^3/s
+    bc.D = 0.03
     
     try:
         e_g = bc.calc_e_g(sigma=0.072) # Sigma taken from [Transportvorgänge in der Verfahrenstechnik - 2020 Springer Nature]
         print("Calculation of e_g successful")
         ic(e_g)
+        isSuccessful.append(True)
     except Exception as e:
         print("Calculation of e_g failed", e)
         e_g = 0.03
+        isSuccessful.append(False)
     
     try:
         a = bc.calc_a(e_g, sigma=0.072)
         print("Calculation of a successful")
         ic(a)
+        isSuccessful.append(True)
     except Exception as e:
         print("Calculation of a failed", e)
         a = 30
+        isSuccessful.append(False)
     
     try:
-        phi_out = bc.calc_phi_z(0.0, 0.3)
+        phi_out = bc.calc_phi_z(0.4, 0.13)
         print("Calculation of phi_z successful")
         ic(phi_out)
+        isSuccessful.append(True)
     except Exception as e:
         print("Calculation of phi_z failed", e)
+        isSuccessful.append(False)
+    
+    return all(isSuccessful)
     
     
+def phi_out_standard(V_flow, D, z, phi_in=0, sigma=0.072):
     
+    bc.V_flow = V_flow
+    bc.D = D
+    
+    e_g = bc.calc_e_g(sigma=sigma)
+    bc.calc_a(e_g, sigma=sigma)
+    phi_out = bc.calc_phi_z(phi_in, z)
+    
+    return(phi_out)
 
 if __name__ == "__main__":
-    test()
+    print(test())
+    
+    ic(phi_out_standard(100 / 60000, 0.1, 0.3))
