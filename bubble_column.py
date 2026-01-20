@@ -5,6 +5,7 @@ Created on Thu Jan 15 11:53:00 2026
 @author: schwarz
 """
 
+from TILMedia import Gas, Liquid
 from statistics import mean
 from heat_exchanger import Heat_exchanger
 import numpy as np
@@ -12,9 +13,14 @@ from icecream import ic
 from scipy.optimize import minimize
 
 class Bubble_Column(Heat_exchanger):
+    '''Bubble column class to calculate saturation of a liquid inside a gas
+    medium_1: gaseous component
+    medium_2: liquid component
     
-    def __init__(self, medium):
-        super().__init__(self, medium)
+    '''
+    
+    def __init__(self, medium_1, medium_2):
+        super().__init__(medium_1, medium_2)
         
     
     def calc_e_g(self, D, sigma, v_g, C_1, rho_f=None, eta_f=None, g=None):
@@ -85,3 +91,16 @@ class Bubble_Column(Heat_exchanger):
         
         return phi_z
         
+    
+    
+    
+    
+def test():
+    water = Liquid('Water')
+    air = Gas('DryAir')
+    bc = Bubble_Column(air, water)
+
+    
+
+if __name__ == "__main__":
+    test()
