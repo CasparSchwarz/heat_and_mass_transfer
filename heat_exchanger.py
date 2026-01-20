@@ -49,6 +49,19 @@ class Heat_exchanger:
         
     # Setter functions
     
+    def set_T_p(self):
+        
+        self.T_1[0] = float(input("Set inlet temperature for medium 1: "))
+        self.T_1[1] = float(input("Set outlet temperature for medium 1: "))
+        self.T_2[0] = float(input("Set inlet temperature for medium 2: "))
+        self.T_2[1] = float(input("Set outlet temperature for medium 2: "))
+        
+        self.p_1 = float(input("Set pressure for medium 1: "))
+        self.p_2 = float(input("Set pressure for medium 2: "))
+        
+        return True
+        
+    
     def set_state_1(self, p=None, T=None):
         
         if self.medium_1 is None:
