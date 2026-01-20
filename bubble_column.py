@@ -19,11 +19,15 @@ class Bubble_Column(Heat_exchanger):
     
     '''
     
+    D = None # Diameter of bubble column
+    z = None # Height of the bubble column
+    
+    
     def __init__(self, medium_1, medium_2):
         super().__init__(medium_1, medium_2)
         
     
-    def calc_e_g(self, D, sigma, v_g, C_1, rho_f=None, eta_f=None, g=None):
+    def calc_e_g(self, sigma, v_g, C_1, D=None, rho_f=None, eta_f=None, g=9.81):
         '''Calculates the relative gas content in the fluid
         For air and water typicall between 0.022 - 0.238  [Ind. Eng. Chem. Process Des. Develop., Vol. 12, No. 1, 1973]
         
@@ -39,17 +43,27 @@ class Bubble_Column(Heat_exchanger):
         e_g:        relative gas content
         '''
         
+        if D is None and self.D is not None:
+            D = self.D
+        else:
+            return Exception("D is not defined.")
+        
+        if self.check_none([rho_f, eta_f]):
+            self.set_state_2()
+            rho_f = self.medium_2.d
+            eta_f = self.medium_2.eta
+        
         A = C_1 * ((g* D**2 * rho_f)/sigma)**(1/8) \
             * ((g * D**3 * rho_f**2)/eta_f**2)**(1/12) \
             * (v_g/np.sqrt(g * D))
             
         f = lambda e_g: (e_g / (1-e_g)**4 - A)**2
         
-        e_g_solved = minimize(f, 0.05).x
+        e_g_solved = minimize(f, 0.05).x[0]
         
         return e_g_solved
         
-    def calc_a(self, D, v_f, e_g, sigma, rho_f=None, g=9.81):
+    def calc_a(self,  v_f, e_g, sigma, D=None, rho_f=None, g=9.81):
         '''Calculates the volume specific area in m^2/m^3
         
         D:          diameter of the bubble column in m
@@ -61,6 +75,11 @@ class Bubble_Column(Heat_exchanger):
         returns:
         a:          volume speicifc area in m^2/m^3
         '''
+        
+        if D is None and self.D is not None:
+            D = self.D
+        else:
+            return Exception("D is not defined.")
         
         if rho_f is None:
             self.set_state_2()
