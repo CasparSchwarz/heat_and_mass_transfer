@@ -25,13 +25,15 @@ class Bubble_Column(Heat_exchanger):
     
     def calc_e_g(self, D, sigma, v_g, C_1, rho_f=None, eta_f=None, g=None):
         '''Calculates the relative gas content in the fluid
+        For air and water typicall between 0.022 - 0.238  [Ind. Eng. Chem. Process Des. Develop., Vol. 12, No. 1, 1973]
         
         D:          diameter of the bubble column in m
+        sigma:      surface tension of the fluid in N/m
         v_g:        velocity of the gas in m/s
         C_1:        initial dissolved gas in kg/m^3
-        rho_f:      density of the fluid
-        eta_f:      dynamic viscosity of the fluid
-        g:          gravitational acceleration
+        rho_f:      density of the fluid in kg/m^3
+        eta_f:      dynamic viscosity of the fluid in Pa*s
+        g:          gravitational acceleration in m/s^2
         
         returns:
         e_g:        relative gas content
@@ -41,7 +43,7 @@ class Bubble_Column(Heat_exchanger):
             * ((g * D**3 * rho_f**2)/eta_f**2)**(1/12) \
             * (v_g/np.sqrt(g * D))
             
-        f = lambda e_g: e_g / (1-e_g)**4 - A
+        f = lambda e_g: (e_g / (1-e_g)**4 - A)**2
         
         e_g_solved = minimize(f, 0.05).x
         
