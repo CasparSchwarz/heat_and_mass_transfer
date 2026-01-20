@@ -41,6 +41,12 @@ class Heat_exchanger:
         self.medium_1 = medium_1
         self.medium_2 = medium_2
         
+    def check_none(self, listToCheck):
+        
+        isNone = any([item is None for item in listToCheck])
+        
+        return isNone
+        
     # Setter functions
     
     def set_state_1(self, p=None, T=None):
