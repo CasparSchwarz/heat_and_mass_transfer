@@ -19,22 +19,26 @@ class Bubble_Column(Heat_exchanger):
     
     '''
     
-    D = None # Diameter of bubble column
-    z = None # Height of the bubble column
+    D = None # Diameter of bubble column in m
+    z = None # Height of the bubble column in m
+    V_flow = None # Volume flow of the gas in m^3/s
+    beta = 2.4e-2 # Mass transfer coefficient in m/s
+                  # Taken from [Transportvorgänge in der Verfahrenstechnik - 2020 Springer Nature]
     
     
     def __init__(self, medium_1, medium_2):
         super().__init__(medium_1, medium_2)
         
     
-    def calc_e_g(self, sigma, v_g, C_1, D=None, rho_f=None, eta_f=None, g=9.81):
+    def calc_e_g(self, sigma, C_1=0.2, v_g=None, D=None, rho_f=None, eta_f=None, g=9.81):
         '''Calculates the relative gas content in the fluid
         For air and water typicall between 0.022 - 0.238  [Ind. Eng. Chem. Process Des. Develop., Vol. 12, No. 1, 1973]
         
         D:          diameter of the bubble column in m
         sigma:      surface tension of the fluid in N/m
         v_g:        velocity of the gas in m/s
-        C_1:        initial dissolved gas in kg/m^3
+        C_1:        initial gas concentration in kg/m^3
+                    value defaults to 0.2 as seen in the source cited above
         rho_f:      density of the fluid in kg/m^3
         eta_f:      dynamic viscosity of the fluid in Pa*s
         g:          gravitational acceleration in m/s^2
@@ -52,6 +56,9 @@ class Bubble_Column(Heat_exchanger):
             self.set_state_2()
             rho_f = self.medium_2.d
             eta_f = self.medium_2.eta
+            
+        if v_g is None:
+            v_g = self.V_flow / (np.pi*D**2 / 4)
         
         A = C_1 * ((g* D**2 * rho_f)/sigma)**(1/8) \
             * ((g * D**3 * rho_f**2)/eta_f**2)**(1/12) \
@@ -61,13 +68,15 @@ class Bubble_Column(Heat_exchanger):
         
         e_g_solved = minimize(f, 0.05).x[0]
         
+        self.e_g = e_g_solved
+        
         return e_g_solved
         
-    def calc_a(self,  v_f, e_g, sigma, D=None, rho_f=None, g=9.81):
+    def calc_a(self, e_g, sigma, nu_f=None, D=None, rho_f=None, g=9.81):
         '''Calculates the volume specific area in m^2/m^3
         
         D:          diameter of the bubble column in m
-        v_f:        velocity of the fluid in m/s
+        nu_f:       kinematic viscosity of the fluid
         e_g:        relative gas content in the fluid
         sigma:      surface tension
         rho_f:      density of the fluid in kg/m^3
@@ -78,18 +87,22 @@ class Bubble_Column(Heat_exchanger):
         
         if D is None and self.D is not None:
             D = self.D
-        else:
+        elif D is None and self.D is None:
             return Exception("D is not defined.")
         
-        if rho_f is None:
+        if self.check_none([nu_f, rho_f]):
             self.set_state_2()
+            nu_f = self.medium_2.eta / self.medium_2.d 
+            rho_f = self.medium_2.d
         
-        a = 1/(3*D) * ((g* D**2 * rho_f) / sigma)**(1/8) * ((g * D**3)/ v_f**2)**0.1 * e_g**1.13
+        a = 1/(3*D) * ((g* D**2 * rho_f) / sigma)**(1/8) * ((g * D**3)/ nu_f**2)**0.1 * e_g**1.13
+        
+        self.a = a
         
         return a
         
      
-    def calc_phi_z(self, phi_in, z, v_g, beta=None, a=None, **kwargs):
+    def calc_phi_z(self, phi_in, z, v_g=None, beta=None, a=None, **kwargs):
         '''Calculates the relative humidity of a gas at the height z inside
         a bubble column
         
@@ -108,6 +121,9 @@ class Bubble_Column(Heat_exchanger):
         if a is None:
             a = self.a
             
+        if v_g is None:
+            v_g = self.V_flow / (np.pi*self.D**2 / 4)
+            
         phi_z = 1 - (1 - phi_in)*np.exp(- (beta*a)/v_g * z)
         
         return phi_z
@@ -120,7 +136,38 @@ def test():
     water = Liquid('Water')
     air = Gas('DryAir')
     bc = Bubble_Column(air, water)
-
+    bc.T_1 = [298.15, 298.15]
+    bc.T_2 = [298.15, 298.15]
+    bc.p_1 = 1e5
+    bc.p_2 = 1e5
+    
+    bc.V_flow = 100 / 60000 # m^3/s
+    bc.D = 0.1 #m
+    
+    try:
+        e_g = bc.calc_e_g(sigma=0.072) # Sigma taken from [Transportvorgänge in der Verfahrenstechnik - 2020 Springer Nature]
+        print("Calculation of e_g successful")
+        ic(e_g)
+    except Exception as e:
+        print("Calculation of e_g failed", e)
+        e_g = 0.03
+    
+    try:
+        a = bc.calc_a(e_g, sigma=0.072)
+        print("Calculation of a successful")
+        ic(a)
+    except Exception as e:
+        print("Calculation of a failed", e)
+        a = 30
+    
+    try:
+        phi_out = bc.calc_phi_z(0, 1)
+        print("Calculation of phi_z successful")
+        ic(phi_out)
+    except Exception as e:
+        print("Calculation of phi_z failed", e)
+    
+    
     
 
 if __name__ == "__main__":
