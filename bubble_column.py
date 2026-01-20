@@ -95,7 +95,7 @@ class Bubble_Column(Heat_exchanger):
             nu_f = self.medium_2.eta / self.medium_2.d 
             rho_f = self.medium_2.d
         
-        a = 1/(3*D) * ((g* D**2 * rho_f) / sigma)**(1/8) * ((g * D**3)/ nu_f**2)**0.1 * e_g**1.13
+        a = 1/(3*D) * ((g* D**2 * rho_f) / sigma)**(1/2) * ((g * D**3)/ nu_f**2)**0.1 * e_g**1.13
         
         self.a = a
         
@@ -161,7 +161,7 @@ def test():
         a = 30
     
     try:
-        phi_out = bc.calc_phi_z(0, 1)
+        phi_out = bc.calc_phi_z(0.0, 0.3)
         print("Calculation of phi_z successful")
         ic(phi_out)
     except Exception as e:
