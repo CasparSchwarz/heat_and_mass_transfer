@@ -90,7 +90,7 @@ class Doppelrohr(Heat_exchanger):
         return T_1_x
     
     
-# Test functions
+#%% Test functions
 
 dr = Doppelrohr(Gas("DryAir"), Liquid("Water"))
 dr.T_1 = [298.15,298.15]

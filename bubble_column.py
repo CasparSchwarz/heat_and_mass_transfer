@@ -135,7 +135,7 @@ class Bubble_Column(Heat_exchanger):
         return phi_z
         
     
-    
+#%% Test functions    
     
 water = Liquid('Water')
 air = Gas('DryAir')

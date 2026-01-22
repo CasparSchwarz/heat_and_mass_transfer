@@ -24,6 +24,9 @@ class Medium:
     h = None # Enthalpy in J/kg
     u = None # Internal energy in J/kg
     s = None # Entropy in J/(kg K)
+    lamb = None # Thermal conductivity in W/(mK)
+    cp = None # Specific heat capacity constant pressure
+    cv = None # Specific heat capacity constant volume
     
     def __init__(self, mediumName):
         
@@ -56,6 +59,9 @@ class Medium:
         self.h = PropsSI('H', 'T', T, 'P', p, self.medium)
         self.u = PropsSI('U', 'T', T, 'P', p, self.medium)
         self.s = PropsSI('S', 'T', T, 'P', p, self.medium)
+        self.lamb = PropsSI('CONFUCTIVITY', 'T', T, 'P', p, self.medium)
+        self.cp = PropsSI('CPMASS', 'T', T, 'P', p, self.medium)
+        self.cv = PropsSI('CVMASS', 'T', T, 'P', p, self.medium)
     
 
 
