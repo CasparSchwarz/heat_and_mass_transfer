@@ -26,8 +26,8 @@ class Bubble_Column(Heat_exchanger):
                   # Taken from [Transportvorgänge in der Verfahrenstechnik - 2020 Springer Nature]
     
     
-    def __init__(self, medium_1, medium_2):
-        super().__init__(medium_1, medium_2)
+    def __init__(self, medium_1, medium_2, **kwargs):
+        super().__init__(medium_1, medium_2, **kwargs)
         
     
     def calc_e_g(self, sigma, C_1=0.2, v_g=None, D=None, rho_f=None, eta_f=None, g=9.81):
@@ -59,6 +59,9 @@ class Bubble_Column(Heat_exchanger):
             
         if v_g is None:
             v_g = self.V_flow / (np.pi*D**2 / 4)
+            
+        if sigma is None and self.useCoolProp:
+            sigma = self.medium_2.sigma
         
         A = C_1 * ((g* D**2 * rho_f)/sigma)**(1/8) \
             * ((g * D**3 * rho_f**2)/eta_f**2)**(1/12) \
@@ -94,6 +97,9 @@ class Bubble_Column(Heat_exchanger):
             self.set_state_2()
             nu_f = self.medium_2.eta / self.medium_2.d 
             rho_f = self.medium_2.d
+            
+        if sigma is None and self.useCoolProp:
+            sigma = self.medium_2.sigma
         
         a = 1/(3*D) * ((g* D**2 * rho_f) / sigma)**(1/2) * ((g * D**3)/ nu_f**2)**0.1 * e_g**1.13
         
@@ -134,10 +140,16 @@ class Bubble_Column(Heat_exchanger):
 water = Liquid('Water')
 air = Gas('DryAir')
 bc = Bubble_Column(air, water)
+bc_cp = Bubble_Column("Air", "Water", useCoolProp=True)
 bc.T_1 = [298.15, 298.15]
 bc.T_2 = [298.15, 298.15]
 bc.p_1 = 1e5
 bc.p_2 = 1e5  
+
+bc_cp.T_1 = [298.15, 298.15]
+bc_cp.T_2 = [298.15, 298.15]
+bc_cp.p_1 = 1e5
+bc_cp.p_2 = 1e5  
  
 def test():
     
@@ -145,11 +157,15 @@ def test():
     
     bc.V_flow = 0.05 / 3600 # m^3/s
     bc.D = 0.03
+    bc_cp.V_flow = 0.05 / 3600 # m^3/s
+    bc_cp.D = 0.03
     
     try:
         e_g = bc.calc_e_g(sigma=0.072) # Sigma taken from [Transportvorgänge in der Verfahrenstechnik - 2020 Springer Nature]
+        e_g_cp = bc_cp.calc_e_g(sigma=None)
         print("Calculation of e_g successful")
         ic(e_g)
+        ic(e_g_cp)
         isSuccessful.append(True)
     except Exception as e:
         print("Calculation of e_g failed", e)
@@ -158,8 +174,10 @@ def test():
     
     try:
         a = bc.calc_a(e_g, sigma=0.072)
+        a_cp = bc_cp.calc_a(e_g, sigma=None)
         print("Calculation of a successful")
         ic(a)
+        ic(a_cp)
         isSuccessful.append(True)
     except Exception as e:
         print("Calculation of a failed", e)
@@ -168,8 +186,10 @@ def test():
     
     try:
         phi_out = bc.calc_phi_z(0.4, 0.13)
+        phi_out_cp = bc_cp.calc_phi_z(0.4, 0.13)
         print("Calculation of phi_z successful")
         ic(phi_out)
+        ic(phi_out_cp)
         isSuccessful.append(True)
     except Exception as e:
         print("Calculation of phi_z failed", e)
