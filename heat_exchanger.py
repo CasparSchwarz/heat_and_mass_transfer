@@ -16,14 +16,14 @@ class Medium:
     
     '''
     T = None # Temperature in K
-    P = None # Pressure in Pa
-    D = None # Density in kg/m^3
+    p = None # Pressure in Pa
+    d = None # Density in kg/m^3
     eta = None # Viscosity in Pa*s
     Q = None # Vapour content in mol/mol
     sigma = None # Surface tension in N/m
-    H = None # Enthalpy in J/kg
-    U = None # Internal energy in J/kg
-    S = None # Entropy in J/(kg K)
+    h = None # Enthalpy in J/kg
+    u = None # Internal energy in J/kg
+    s = None # Entropy in J/(kg K)
     
     def __init__(self, mediumName):
         
@@ -50,12 +50,12 @@ class Medium:
             return Exception("Pressure needs to be specified")
         
         
-        self.D = PropsSI('D', 'T', T, 'P', p, self.medium)
-        self.V = PropsSI('V', 'T', T, 'P', p, self.medium)
+        self.d = PropsSI('D', 'T', T, 'P', p, self.medium)
+        self.eta = PropsSI('V', 'T', T, 'P', p, self.medium)
         self.sigma = PropsSI('SURFACE_TENSION', 'T', T, 'Q', 0.5, self.medium)
-        self.H = PropsSI('H', 'T', T, 'P', p, self.medium)
-        self.U = PropsSI('U', 'T', T, 'P', p, self.medium)
-        self.S = PropsSI('S', 'T', T, 'P', p, self.medium)
+        self.h = PropsSI('H', 'T', T, 'P', p, self.medium)
+        self.u = PropsSI('U', 'T', T, 'P', p, self.medium)
+        self.s = PropsSI('S', 'T', T, 'P', p, self.medium)
     
 
 
