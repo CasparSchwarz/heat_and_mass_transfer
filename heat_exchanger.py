@@ -86,6 +86,8 @@ class Heat_exchanger:
     medium_1 = None
     medium_2 = None
     
+    useCoolProp=False
+    
     def __init__(self, medium_1, medium_2, useCoolProp=False):
         
         if useCoolProp:
