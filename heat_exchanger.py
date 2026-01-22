@@ -27,6 +27,7 @@ class Medium:
     lamb = None # Thermal conductivity in W/(mK)
     cp = None # Specific heat capacity constant pressure
     cv = None # Specific heat capacity constant volume
+    Pr = None # Prandtl number
     
     def __init__(self, mediumName):
         
@@ -55,17 +56,28 @@ class Medium:
         
         self.d = PropsSI('D', 'T', T, 'P', p, self.medium)
         self.eta = PropsSI('V', 'T', T, 'P', p, self.medium)
-        self.sigma = PropsSI('SURFACE_TENSION', 'T', T, 'Q', 0.5, self.medium)
+        try:
+            self.sigma = PropsSI('SURFACE_TENSION', 'T', T, 'Q', 0.5, self.medium)
+        except ValueError as e:
+            self.sigma = None
         self.h = PropsSI('H', 'T', T, 'P', p, self.medium)
         self.u = PropsSI('U', 'T', T, 'P', p, self.medium)
         self.s = PropsSI('S', 'T', T, 'P', p, self.medium)
-        self.lamb = PropsSI('CONFUCTIVITY', 'T', T, 'P', p, self.medium)
+        self.lamb = PropsSI('CONDUCTIVITY', 'T', T, 'P', p, self.medium)
         self.cp = PropsSI('CPMASS', 'T', T, 'P', p, self.medium)
         self.cv = PropsSI('CVMASS', 'T', T, 'P', p, self.medium)
+        self.Pr = PropsSI('PRANDTL', 'T', T, 'P', p, self.medium)
     
 
 
 class Heat_exchanger:
+    '''Parent class
+    Consist all fundamental equations needed to calculate heat and mass transfer
+    phenomena.
+    
+    This class also handles all state changes regarding the used medium.
+    
+    '''
     
     A = None
     P_1 = None
@@ -172,6 +184,12 @@ class Heat_exchanger:
             self.medium_2.set_state(T, p)
         else:
             self.medium_2.setState_pTxi(p, T)
+            
+    def set_state_all(self):
+        
+        self.set_state_1()
+        self.set_state_2()
+        
         
     def set_A(self, A):
         if A < 0:
@@ -251,7 +269,8 @@ class Heat_exchanger:
             c_p = kwargs['c_p']
             
         else:
-            self.medium_1.setState_pTxi(self.p_1, mean(self.T_1))
+            #deprecated: self.medium_1.setState_pTxi(self.p_1, mean(self.T_1))
+            self.set_state_1()
             k = self.k # W/m^2K
             m_flow = self.m_flow_1 # kg/s
             A = self.A # m^2
@@ -269,7 +288,8 @@ class Heat_exchanger:
             c_p = kwargs['c_p']
             
         else:
-            self.medium_2.setState_pTxi(self.p_2, mean(self.T_2))
+            #deprecated: self.medium_2.setState_pTxi(self.p_2, mean(self.T_2))
+            self.set_state_2()
             k = self.k # W/m^2K
             m_flow = self.m_flow_2 # kg/s
             A = self.A # m^2
@@ -280,6 +300,10 @@ class Heat_exchanger:
         return self.NTU_2
     
     def calc_R_1(self, **kwargs):
+        '''Calculates the ratio of the heat capacity streams for medium 1 to 2
+        
+        '''
+        
         if len(kwargs) > 0:
             m_flow_1 = kwargs['m_flow_1']
             m_flow_2 = kwargs['m_flow_2']
@@ -287,8 +311,9 @@ class Heat_exchanger:
             c_p_2 = kwargs['c_p_2']
             
         else:
-            self.medium_1.setState_pTxi(self.p_1, mean(self.T_1))
-            self.medium_2.setState_pTxi(self.p_2, mean(self.T_2))
+            # self.medium_1.setState_pTxi(self.p_1, mean(self.T_1))
+            # self.medium_2.setState_pTxi(self.p_2, mean(self.T_2))
+            self.set_state_all()
             m_flow_1 = self.m_flow_1
             m_flow_2 = self.m_flow_2
             c_p_1 = self.medium_1.cp
@@ -299,14 +324,19 @@ class Heat_exchanger:
         return self.R_1
     
     def calc_R_2(self, **kwargs):
+        '''Calculates the ratio of the heat capacity streams for medium 2 to 1
         
-        self.R_2 = 1/self.calc_R_1(kwargs)
+        '''
+        
+        self.R_2 = 1/self.calc_R_1(**kwargs)
         
         return self.R_2
     
     
     def calc_alpha_1(self, Nu, L, lamb=None):
+        '''Calculates the heat transfer coefficient for the side of medium 1
         
+        '''
         if lamb is None:
             self.set_state_1()
             lamb = self.medium_1.lamb
@@ -316,7 +346,9 @@ class Heat_exchanger:
         return self.alpha_1
     
     def calc_alpha_2(self, Nu, L, lamb=None):
+        '''Calculates the heat transfer coefficient for the side of medium 2
         
+        '''
         if lamb is None:
             self.set_state_2()
             lamb = self.medium_2.lamb
