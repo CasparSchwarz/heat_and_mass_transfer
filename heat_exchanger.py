@@ -6,8 +6,46 @@ Created on Fri Jul  4 10:03:55 2025
 """
 
 from TILMedia import Gas, Liquid
+from CoolProp.CoolProp import PropsSI, PhaseSI
+from pyfluids import FluidsList
 import numpy as np
 mean = np.mean
+
+
+class Medium:
+    
+    T = None # Temperature in K
+    P = None # Pressure in Pa
+    D = None # Density in kg/m^3
+    V = None # Viscosity in Pa*s
+    Q = None # Vapour content
+    
+    def __init__(self, mediumName):
+        
+        if mediumName not in FluidsList:
+            return Exception(f"{mediumName} not in coolProp fluids list")
+        
+    def set_state(self, T, p):
+        self.T = T
+        self.P = p
+        
+    def calc_states(self, T=None, p=None, Q=None):
+        
+        if T is None:
+            T = self.T
+        elif T is None and self.T is None:
+            return Exception("Temperature needs to be sepcified")
+        
+        if p is None:
+            p = self.P
+        elif p is None and self.P is None:
+            return Exception("Pressure needs to be specified")
+        
+        self.D = PropsSI('D', 'T', T, 'P', p, self.medium)
+        self.D = PropsSI('V', 'T', T, 'P', p, self.medium)
+        self.D = PropsSI('D', 'T', T, 'P', p, self.medium)
+    
+
 
 class Heat_exchanger:
     
