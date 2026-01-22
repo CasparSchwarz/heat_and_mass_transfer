@@ -31,7 +31,7 @@ class Medium:
     
     def __init__(self, mediumName):
         
-        if mediumName not in FluidsList:
+        if mediumName not in FluidsList and mediumName is not None:
             raise Exception(f"{mediumName} not in coolProp fluids list")
         self.medium = mediumName
         

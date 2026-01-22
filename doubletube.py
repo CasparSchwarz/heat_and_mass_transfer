@@ -13,12 +13,12 @@ mean = np.mean
 
 class Doubletube(Heat_exchanger):
     
-    def __init__(self, medium_1, medium_2):
+    def __init__(self, medium_1, medium_2, **kwargs):
         
         if any([medium_1 is None, medium_2 is None]):
             raise Exception("Medium_1 and medium_2 need to be defined at initialization")
             
-        super().__init__(medium_1, medium_2)
+        super().__init__(medium_1, medium_2, **kwargs)
         
     def calc_Re_1(self, v, X_char, eta=None, rho=None):
         
@@ -93,6 +93,7 @@ class Doubletube(Heat_exchanger):
 #%% Test functions
 
 dr = Doubletube(Gas("DryAir"), Liquid("Water"))
+#dr = Doubletube("Air", "Water", useCoolProp=True)
 dr.T_1 = [298.15,298.15]
 dr.T_2 = [383.15,383.15]
 dr.p_1 = 100000

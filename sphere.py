@@ -13,8 +13,8 @@ from icecream import ic
 
 class Sphere(Heat_exchanger):
     
-    def __init__(self, medium_1):
-        super().__init__(medium_1, 'Dummy')
+    def __init__(self, medium_1, medium_2=None, **kwargs):
+        super().__init__(medium_1, medium_2, **kwargs)
         
         
     # Calculates Nu for sphere according to Gnielinski (VDI Wärmeatlas)
@@ -79,7 +79,8 @@ class Sphere(Heat_exchanger):
         if alpha_1 is None: alpha_1 = self.alpha_1
         if m_flow_1 is None: m_flow_1 = self.m_flow_1
         if c_p is None:
-            self.medium_1.setState_pTxi(self.p_1, mean(self.T_1))
+            #self.medium_1.setState_pTxi(self.p_1, mean(self.T_1))
+            self.set_state_1()
             c_p = self.medium_1.cp
         if A is None:
             A = self.A
@@ -98,8 +99,8 @@ class Particle_Bed(Sphere):
     f_a = None
     
     
-    def __init__(self, medium):
-        super().__init__(medium)
+    def __init__(self, medium, **kwargs):
+        super().__init__(medium, **kwargs)
         
     def calc_Nu(self, f_a=None, psi=None, **kwargs): 
         
@@ -249,6 +250,7 @@ class Particle_Bed(Sphere):
     
 #%% ##### TESTER FUNCTIONS #######################################################
 pb = Particle_Bed(Gas("DryAir"))
+#pb = Particle_Bed("Air", useCoolProp=True)
 pb.T_1 = [298.15,298.15]
 pb.T_2 = [383.15,383.15]
 pb.p_1 = 100000   
