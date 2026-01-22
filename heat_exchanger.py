@@ -5,31 +5,39 @@ Created on Fri Jul  4 10:03:55 2025
 @author: schwarz
 """
 
-from TILMedia import Gas, Liquid
-from CoolProp.CoolProp import PropsSI, PhaseSI
+from CoolProp.CoolProp import PropsSI
 from pyfluids import FluidsList
 import numpy as np
 mean = np.mean
 
 
 class Medium:
+    '''Simple class to define a medium based on the CoolProp library
     
+    '''
     T = None # Temperature in K
     P = None # Pressure in Pa
     D = None # Density in kg/m^3
-    V = None # Viscosity in Pa*s
-    Q = None # Vapour content
+    eta = None # Viscosity in Pa*s
+    Q = None # Vapour content in mol/mol
+    sigma = None # Surface tension in N/m
+    H = None # Enthalpy in J/kg
+    U = None # Internal energy in J/kg
+    S = None # Entropy in J/(kg K)
     
     def __init__(self, mediumName):
         
         if mediumName not in FluidsList:
-            return Exception(f"{mediumName} not in coolProp fluids list")
+            raise Exception(f"{mediumName} not in coolProp fluids list")
+        self.medium = mediumName
         
     def set_state(self, T, p):
         self.T = T
         self.P = p
         
-    def calc_states(self, T=None, p=None, Q=None):
+        self.calc_states(T, p)
+        
+    def calc_states(self, T=None, p=None):
         
         if T is None:
             T = self.T
@@ -41,9 +49,13 @@ class Medium:
         elif p is None and self.P is None:
             return Exception("Pressure needs to be specified")
         
+        
         self.D = PropsSI('D', 'T', T, 'P', p, self.medium)
-        self.D = PropsSI('V', 'T', T, 'P', p, self.medium)
-        self.D = PropsSI('D', 'T', T, 'P', p, self.medium)
+        self.V = PropsSI('V', 'T', T, 'P', p, self.medium)
+        self.sigma = PropsSI('SURFACE_TENSION', 'T', T, 'Q', 0.5, self.medium)
+        self.H = PropsSI('H', 'T', T, 'P', p, self.medium)
+        self.U = PropsSI('U', 'T', T, 'P', p, self.medium)
+        self.S = PropsSI('S', 'T', T, 'P', p, self.medium)
     
 
 
@@ -74,10 +86,16 @@ class Heat_exchanger:
     medium_1 = None
     medium_2 = None
     
-    def __init__(self, medium_1, medium_2):
+    def __init__(self, medium_1, medium_2, useCoolProp=False):
         
-        self.medium_1 = medium_1
-        self.medium_2 = medium_2
+        if useCoolProp:
+            self.useCoolProp = useCoolProp
+            self.medium_1 = Medium(medium_1)
+            self.medium_2 = Medium(medium_2)
+        else:
+            self.medium_1 = medium_1
+            self.medium_2 = medium_2
+        
         
     def check_none(self, listToCheck):
         
@@ -118,8 +136,11 @@ class Heat_exchanger:
             T = mean(self.T_1)
         elif T is None and self.T_1[0] is not None:
             T = mean(self.T_1)
-                
-        self.medium_1.setState_pTxi(p, T)
+        
+        if self.useCoolProp:
+            self.medium_1.set_state(T, p)
+        else:
+            self.medium_1.setState_pTxi(p, T)
         
     def set_state_2(self, p=None, T=None):
         
@@ -139,7 +160,10 @@ class Heat_exchanger:
         elif T is None and self.T_2[0] is not None:
             T = mean(self.T_2)      
 
-        self.medium_2.setState_pTxi(p, T)
+        if self.useCoolProp:
+            self.medium_2.set_state(T, p)
+        else:
+            self.medium_2.setState_pTxi(p, T)
         
     def set_A(self, A):
         if A < 0:
