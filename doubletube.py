@@ -11,7 +11,7 @@ from heat_exchanger import Heat_exchanger
 import numpy as np
 mean = np.mean
 
-class Doppelrohr(Heat_exchanger):
+class Doubletube(Heat_exchanger):
     
     def __init__(self, medium_1, medium_2):
         
@@ -22,11 +22,11 @@ class Doppelrohr(Heat_exchanger):
         
     def calc_Re_1(self, v, X_char, eta=None, rho=None):
         
+        self.set_state_1()
+        
         if eta is None:
-            self.medium_1.setState_pTxi(self.p_1, mean(self.T_1))
             eta = self.medium_1.eta # Pas'
         if rho is None:
-            self.medium_1.setState_pTxi(self.p_1, mean(self.T_1))
             rho = self.medium_1.d
         
         self.Re_1 = rho*v*X_char/eta
@@ -35,11 +35,11 @@ class Doppelrohr(Heat_exchanger):
     
     def calc_Re_2(self, v, X_char, eta=None, rho=None):
         
+        self.set_state_2()
+        
         if eta is None:
-            self.medium_2.setState_pTxi(self.p_2, mean(self.T_2))
             eta = self.medium_2.eta # Pas
         if rho is None:
-            self.medium_2.setState_pTxi(self.p_2, mean(self.T_2))
             rho = self.medium_2.d # kg/m^3
         
         self.Re_2 = rho*v*X_char/eta
@@ -68,7 +68,7 @@ class Doppelrohr(Heat_exchanger):
             p = self.p_1
             T = mean(self.T_1)
             
-        self.medium_1.setState_pTxi(p, T)
+        self.set_state_1()
         
         self.Pr_1 = self.medium_1.Pr
         
@@ -80,7 +80,7 @@ class Doppelrohr(Heat_exchanger):
         if alpha_1 is None: alpha_1 = self.alpha_1
         if m_flow_1 is None: m_flow_1 = self.m_flow_1
         if c_p is None:
-            self.medium_1.setState_pTxi(self.p_1, mean(self.T_1))
+            self.set_state_1()
             c_p = self.medium_1.cp
         if A is None:
             A = self.A
@@ -92,7 +92,7 @@ class Doppelrohr(Heat_exchanger):
     
 #%% Test functions
 
-dr = Doppelrohr(Gas("DryAir"), Liquid("Water"))
+dr = Doubletube(Gas("DryAir"), Liquid("Water"))
 dr.T_1 = [298.15,298.15]
 dr.T_2 = [383.15,383.15]
 dr.p_1 = 100000
