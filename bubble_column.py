@@ -156,9 +156,9 @@ def test():
     isSuccessful = []
     
     bc.V_flow = 0.05 / 3600 # m^3/s
-    bc.D = 0.03
+    bc.D = 0.01
     bc_cp.V_flow = 0.05 / 3600 # m^3/s
-    bc_cp.D = 0.03
+    bc_cp.D = 0.01
     
     try:
         e_g = bc.calc_e_g(sigma=0.072) # Sigma taken from [Transportvorgänge in der Verfahrenstechnik - 2020 Springer Nature]
@@ -185,8 +185,8 @@ def test():
         isSuccessful.append(False)
     
     try:
-        phi_out = bc.calc_phi_z(0.4, 0.13)
-        phi_out_cp = bc_cp.calc_phi_z(0.4, 0.13)
+        phi_out = bc.calc_phi_z(0.5, 0.13)
+        phi_out_cp = bc_cp.calc_phi_z(0.5, 0.13)
         print("Calculation of phi_z successful")
         ic(phi_out)
         ic(phi_out_cp)
@@ -207,9 +207,9 @@ def phi_out_standard(V_flow, D, z, phi_in=0, sigma=0.072):
     bc.calc_a(e_g, sigma=sigma)
     phi_out = bc.calc_phi_z(phi_in, z)
     
-    return(phi_out)
+    return phi_out
 
 if __name__ == "__main__":
     print(test())
     
-    ic(phi_out_standard(100 / 60000, 0.1, 0.3))
+    ic(phi_out_standard(V_flow=100 / 60000, D=0.1, z=0.08))
